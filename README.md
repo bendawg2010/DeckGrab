@@ -1,37 +1,38 @@
 # DeckGrab
 
-> Yank any Quizlet set into plain text. Free. Open source. No login.
+> Free flashcards. In your browser. No login.
 
 **[deckgrab.pages.dev](https://deckgrab.pages.dev/)**
 
-A one-click bookmarklet that exports any Quizlet set as TSV, CSV, JSON, or Anki — straight from your authenticated browser session, with no scraping server in the middle.
+A free, open-source flashcard app. Drop the bookmarklet on your bookmarks bar, click it on any Quizlet set, and your cards land in DeckGrab — ready to study with ↑/←/→ or export as TSV, CSV, JSON, or Anki. Local-first, no signup, no scraping server in the middle.
 
-## Why?
+## Features
 
-- Quizlet removed bulk export. You wrote your cards. They should be portable.
-- Your data should travel with you to Anki, StudyDeck, Google Sheets, anywhere.
-- No login. No scraping API. Runs entirely in your browser.
+- **Study mode** — flashcards with keyboard controls:
+  - `↑` flip the card to reveal the definition
+  - `↓` flip back
+  - `←` previous card
+  - `→` next card
+  - `Space` toggle flip
+  - `S` shuffle the deck
+  - `R` restart from card 1
+- **Cool yoink animation** when fresh cards arrive — flying card silhouettes converge on the counter as it ticks up
+- **Multi-format export** — TSV, CSV (regular + Anki-flavored), JSON, hand-off to StudyDeck
+- **Local-first** — every card is cached in `localStorage`, so you can refresh / come back later and pick up where you left off
+- **Edit before exporting** — tap any card row to fix typos, swap term ↔ definition in one click, delete cards you don't need
+- **Manual paste fallback** — if the clipboard handoff fails (Safari + private browsing), paste your TSV directly
 
-## How it works
+## Import from Quizlet
 
-1. **Drag the "⭐ Grab cards" pill** from the homepage to your bookmarks bar.
-2. **Open any Quizlet set page** (`quizlet.com/<id>/<title>`).
-3. **Click the bookmark.** It scrapes the page in your authenticated session, copies the cards to your clipboard as TSV, and opens DeckGrab so you can pick a format.
+The bookmarklet runs in your authenticated browser session — no scraping API, no man-in-the-middle. It tries (in order):
 
-The scraper tries (in order):
-- Quizlet's `__NEXT_DATA__` JSON blob
-- Inline `<script>` regex matching for known card-shape JSON
-- DOM containers with class names matching `term`/`card`/`flashcard`
-- Per-container `innerText` newline-split fallback (handles obfuscated class names)
-- A last-resort generic scan of `div`/`li`/`article` siblings
+1. Quizlet's `__NEXT_DATA__` JSON blob
+2. Inline `<script>` regex matching for known card-shape JSON
+3. DOM containers with class names matching `term`/`card`/`flashcard`
+4. Per-container `innerText` newline-split fallback (handles obfuscated class names)
+5. A last-resort generic scan of `div`/`li`/`article` siblings
 
-## Export formats
-
-- **TSV** — paste into Quizlet (yes, it supports import via TSV), Anki, Google Sheets
-- **CSV** — for spreadsheets and most flashcard apps
-- **Anki CSV** — comma-separated, no header, ready for File → Import in Anki
-- **JSON** — for programmatic use
-- **StudyDeck** — one-click handoff to [studydeck.pages.dev](https://studydeck.pages.dev/) (free flashcard app — also open source)
+After scraping, it copies your cards to the clipboard as TSV and opens DeckGrab so you can study or export.
 
 ## Local dev
 

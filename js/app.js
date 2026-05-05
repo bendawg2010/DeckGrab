@@ -1,5 +1,5 @@
 /* ====================================================================
-   DeckGrab — Yank any Quizlet set into plain text
+   DeckGrab — Free flashcards. Study them or export them.
    Vanilla JS / hash router / no dependencies.
 ==================================================================== */
 
@@ -108,8 +108,8 @@
 
     // Hero
     const hero = el("section", { class: "dg-hero" },
-      el("h1", null, "Yank any Quizlet set into ", el("span", { class: "accent" }, "plain text.")),
-      el("p", null, "Free. Open source. No login. One bookmarklet, every flashcard set you ever made — exported to TSV, CSV, JSON or straight into Anki / StudyDeck."),
+      el("h1", null, "Free flashcards. ", el("span", { class: "accent" }, "In your browser.")),
+      el("p", null, "Drop the bookmark. Click it on any Quizlet set. Study right here, or export your cards as TSV, CSV, JSON, or Anki. No login. Open source."),
     );
     root.appendChild(hero);
 
@@ -131,17 +131,33 @@
         el("strong", null, "Drag this button"),
         " up to your browser’s ",
         el("strong", null, "bookmarks bar"),
-        ". Then click it on any Quizlet set page.",
+        ". Click it on any Quizlet set page to import.",
       ),
     );
     root.appendChild(drop);
+
+    // If we have a recent deck cached, offer a "Resume study" jump
+    const cached = loadCardsLS();
+    if (cached.length) {
+      root.appendChild(el("section", { class: "dg-resume" },
+        el("div", { class: "dg-resume-text" },
+          el("strong", null, "Resume your last deck"),
+          " · ", String(cached.length), " cards cached locally."
+        ),
+        el("div", { style: "display:flex; gap:8px;" },
+          el("a", { class: "dg-export-btn primary", href: "#/study" }, "📖 Study"),
+          el("a", { class: "dg-export-btn", href: "#/cards" }, "⬇ Export"),
+        ),
+      ));
+    }
 
     // 3 steps
     root.appendChild(makeSteps());
 
     // Compatibility row
     root.appendChild(el("section", { class: "dg-compat" },
-      el("strong", null, "Exports to:"),
+      el("strong", null, "Use them anywhere:"),
+      el("span", { class: "dg-compat-tag" }, "Study here"),
       el("span", { class: "dg-compat-tag" }, "TSV"),
       el("span", { class: "dg-compat-tag" }, "CSV"),
       el("span", { class: "dg-compat-tag" }, "JSON"),
@@ -185,12 +201,12 @@
       // Step 3
       el("div", { class: "dg-step" },
         el("div", { class: "dg-step-number" }, "3"),
-        el("h3", null, "Export anywhere"),
-        el("p", null, "We open this site with all your cards in clipboard. Pick TSV / CSV / JSON / Anki / StudyDeck — your data, your call."),
+        el("h3", null, "Study or export"),
+        el("p", null, "Cards land in your clipboard and on this page. Hit ", el("strong", null, "Study"), " for flashcards (↑ flip, ←→ navigate). Or export to TSV / CSV / JSON / Anki."),
         miniBrowser([
           el("div", { class: "dg-mini-export-grid" },
-            el("div", { class: "dg-mini-export-btn primary" }, "Copy TSV"),
-            el("div", { class: "dg-mini-export-btn" }, "Download CSV"),
+            el("div", { class: "dg-mini-export-btn primary" }, "📖 Study"),
+            el("div", { class: "dg-mini-export-btn" }, "Copy TSV"),
             el("div", { class: "dg-mini-export-btn" }, "Anki"),
             el("div", { class: "dg-mini-export-btn" }, "StudyDeck"),
           ),
@@ -214,6 +230,29 @@
     );
   }
 
+  // -------- Local persistence ----------------------------------------
+
+  const LS_KEY = "dg_cards_v1";
+
+  function saveCardsLS(cards) {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        cards,
+        savedAt: Date.now(),
+      }));
+    } catch (e) { /* quota or private mode — ignore */ }
+  }
+
+  function loadCardsLS() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return [];
+      const obj = JSON.parse(raw);
+      if (Array.isArray(obj?.cards)) return obj.cards;
+    } catch (e) {}
+    return [];
+  }
+
   // -------- Cards receiver page (#/cards) ----------------------------
 
   let CURRENT_CARDS = [];
@@ -235,6 +274,14 @@
       try {
         raw = await navigator.clipboard.readText();
       } catch (err) {
+        // Try the local cache before falling back to error state
+        const cached = loadCardsLS();
+        if (cached.length) {
+          CURRENT_CARDS = cached;
+          renderCardsContent(wrapper);
+          root.appendChild(makeFooter());
+          return;
+        }
         renderClipboardErrorState(wrapper, expected);
         root.appendChild(makeFooter());
         return;
@@ -243,6 +290,12 @@
 
     let cards = parseTSV(raw);
 
+    // Fallback: if there's nothing fresh on the clipboard but we have a
+    // cached deck, use that — supports refresh / coming back later.
+    if (!cards.length && !fromClipboard) {
+      cards = loadCardsLS();
+    }
+
     if (!cards.length) {
       renderEmptyState(wrapper, expected);
       root.appendChild(makeFooter());
@@ -250,8 +303,80 @@
     }
 
     CURRENT_CARDS = cards;
+    saveCardsLS(cards);
+
+    // Cool fly-in animation when cards arrive fresh from a yoink
+    if (fromClipboard && raw) {
+      await playYoinkAnimation(cards.length);
+    }
+
     renderCardsContent(wrapper);
     root.appendChild(makeFooter());
+  }
+
+  // -------- Yoink animation ------------------------------------------
+
+  function playYoinkAnimation(count) {
+    return new Promise((resolve) => {
+      const overlay = el("div", { class: "dg-yoink-overlay" });
+      const swirl = el("div", { class: "dg-yoink-swirl" });
+
+      // Counter that ticks up
+      const counter = el("div", { class: "dg-yoink-count" }, "0");
+      const label = el("div", { class: "dg-yoink-label" }, "YOINKING");
+      const stack = el("div", { class: "dg-yoink-stack" });
+
+      // Generate flying card silhouettes — random angles, staggered
+      const N = Math.min(18, Math.max(8, Math.round(count / 16)));
+      for (let i = 0; i < N; i++) {
+        const card = el("div", { class: "dg-yoink-card" });
+        const angle = (i / N) * Math.PI * 2 + Math.random() * 0.6;
+        const dist = 600 + Math.random() * 400;
+        const fromX = Math.cos(angle) * dist;
+        const fromY = Math.sin(angle) * dist;
+        const fromRot = (Math.random() - 0.5) * 720;
+        card.style.setProperty("--from-x", `${fromX}px`);
+        card.style.setProperty("--from-y", `${fromY}px`);
+        card.style.setProperty("--from-rot", `${fromRot}deg`);
+        card.style.animationDelay = `${i * 0.045}s`;
+        // Random hue along brand gradient
+        const hue = i % 3 === 0 ? "#FFB454" : i % 3 === 1 ? "#FF6B6B" : "#C147FF";
+        card.style.setProperty("--card-hue", hue);
+        stack.appendChild(card);
+      }
+
+      swirl.appendChild(stack);
+      swirl.appendChild(label);
+      swirl.appendChild(counter);
+      overlay.appendChild(swirl);
+      document.body.appendChild(overlay);
+
+      // Tick the counter from 0 → count over ~1.0s
+      const dur = 900;
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - t, 3);
+        counter.textContent = String(Math.round(eased * count));
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      // Total animation is ~1.6s (cards land ~1.4s, hold + fade out ~0.2s)
+      setTimeout(() => {
+        label.textContent = "YOINKED ✓";
+        label.classList.add("dg-yoink-done");
+      }, 1100);
+
+      setTimeout(() => {
+        overlay.classList.add("dg-yoink-out");
+      }, 1500);
+
+      setTimeout(() => {
+        overlay.remove();
+        resolve();
+      }, 1850);
+    });
   }
 
   function makePasteFallback() {
@@ -322,7 +447,8 @@
 
     // Export bar
     wrapper.appendChild(el("div", { class: "dg-export-bar" },
-      el("button", { class: "dg-export-btn primary", onclick: () => copyTSV() }, "📋 Copy TSV"),
+      el("a", { class: "dg-export-btn primary", href: "#/study" }, "📖 Study"),
+      el("button", { class: "dg-export-btn", onclick: () => copyTSV() }, "📋 Copy TSV"),
       el("button", { class: "dg-export-btn", onclick: () => copyCSV() }, "📋 Copy CSV"),
       el("button", { class: "dg-export-btn", onclick: () => downloadFile("deck.csv", buildCSV(), "text/csv") }, "⬇ CSV"),
       el("button", { class: "dg-export-btn", onclick: () => downloadFile("deck.tsv", buildTSV(), "text/tab-separated-values") }, "⬇ TSV"),
@@ -454,6 +580,219 @@
     window.open(`https://studydeck.pages.dev/#/import-quizlet?n=${CURRENT_CARDS.length}&c=1`, "_blank");
   }
 
+  // -------- Study mode (#/study) -------------------------------------
+  // Flashcards UI: ↑ flip, ↓ unflip, ← prev, → next, S shuffle, R restart.
+
+  let STUDY_KEY_HANDLER = null;
+
+  function renderStudy() {
+    // Clean up any previous global key handler
+    if (STUDY_KEY_HANDLER) {
+      document.removeEventListener("keydown", STUDY_KEY_HANDLER);
+      STUDY_KEY_HANDLER = null;
+    }
+
+    const root = document.getElementById("root");
+    clear(root);
+    root.appendChild(makeHeader());
+
+    // Resolve cards: in-memory first, then localStorage.
+    let cards = CURRENT_CARDS.length ? CURRENT_CARDS : loadCardsLS();
+    if (!cards.length) {
+      const wrap = el("section", { class: "dg-receiver" });
+      wrap.appendChild(el("div", { class: "dg-empty" },
+        el("h2", null, "No cards to study yet"),
+        el("p", null, "Drop the bookmark on your bookmarks bar, then click it on a Quizlet set. Cards will land here ready to study."),
+        el("a", { class: "dg-export-btn primary", href: "#/" }, "← How to import"),
+      ));
+      root.appendChild(wrap);
+      root.appendChild(makeFooter());
+      return;
+    }
+    CURRENT_CARDS = cards;
+
+    let order = cards.map((_, i) => i);
+    let pos = 0;
+    let flipped = false;
+
+    const wrap = el("section", { class: "dg-study" });
+
+    // Header / progress
+    const counter = el("div", { class: "dg-study-counter" });
+    const progress = el("div", { class: "dg-study-progress" },
+      el("div", { class: "dg-study-progress-fill" }),
+    );
+    const headerRow = el("div", { class: "dg-study-head" },
+      el("a", { class: "dg-export-btn", href: "#/cards" }, "← Back"),
+      counter,
+      el("div", { style: "display:flex; gap:8px;" },
+        el("button", { class: "dg-export-btn", onclick: () => { shuffle(); render(); } }, "🔀 Shuffle"),
+        el("button", { class: "dg-export-btn", onclick: () => { restart(); render(); } }, "↻ Restart"),
+      ),
+    );
+    wrap.appendChild(headerRow);
+    wrap.appendChild(progress);
+
+    // Card stage
+    const stage = el("div", { class: "dg-study-stage" });
+    const cardEl = el("div", { class: "dg-flashcard" });
+    const innerEl = el("div", { class: "dg-flashcard-inner" });
+    const frontEl = el("div", { class: "dg-flashcard-face dg-flashcard-front" });
+    const backEl = el("div", { class: "dg-flashcard-face dg-flashcard-back" });
+
+    innerEl.appendChild(frontEl);
+    innerEl.appendChild(backEl);
+    cardEl.appendChild(innerEl);
+
+    cardEl.addEventListener("click", () => {
+      flipped = !flipped;
+      render();
+    });
+
+    stage.appendChild(cardEl);
+    wrap.appendChild(stage);
+
+    // Hint row
+    const hint = el("div", { class: "dg-study-hint" },
+      el("span", null, kbHint("↑"), " or click to flip"),
+      el("span", null, kbHint("←"), " ", kbHint("→"), " navigate"),
+      el("span", null, kbHint("S"), " shuffle"),
+      el("span", null, kbHint("R"), " restart"),
+    );
+    wrap.appendChild(hint);
+
+    // Done state (shown when reaching end + flipping next on last card)
+    const doneEl = el("div", { class: "dg-study-done", style: { display: "none" } },
+      el("div", { class: "dg-study-done-emoji" }, "🎉"),
+      el("h2", null, "Reviewed all ", el("span", { class: "accent" }, String(cards.length), " cards.")),
+      el("p", null, "Run it back, shuffle for variety, or jump back to export."),
+      el("div", { style: "display:flex; gap:10px; flex-wrap:wrap; justify-content:center;" },
+        el("button", { class: "dg-export-btn primary", onclick: () => { restart(); render(); } }, "↻ Restart"),
+        el("button", { class: "dg-export-btn", onclick: () => { shuffle(); render(); } }, "🔀 Shuffle & restart"),
+        el("a", { class: "dg-export-btn", href: "#/cards" }, "← Back to deck"),
+      ),
+    );
+    wrap.appendChild(doneEl);
+
+    root.appendChild(wrap);
+    root.appendChild(makeFooter());
+
+    // ---- Mutations ----
+
+    function shuffle() {
+      // Fisher-Yates
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      pos = 0;
+      flipped = false;
+    }
+    function restart() {
+      order = cards.map((_, i) => i);
+      pos = 0;
+      flipped = false;
+    }
+    function next() {
+      if (pos < order.length - 1) {
+        pos++;
+        flipped = false;
+        render();
+      } else {
+        // Done state
+        stage.style.display = "none";
+        hint.style.display = "none";
+        progress.style.display = "none";
+        doneEl.style.display = "flex";
+      }
+    }
+    function prev() {
+      if (pos > 0) {
+        pos--;
+        flipped = false;
+        render();
+      }
+    }
+
+    // ---- Render ----
+
+    function render() {
+      const card = cards[order[pos]];
+      counter.innerHTML = "";
+      counter.appendChild(el("strong", null, String(pos + 1)));
+      counter.appendChild(document.createTextNode(" / " + cards.length));
+
+      // Progress bar
+      const fill = progress.querySelector(".dg-study-progress-fill");
+      const pct = ((pos + 1) / cards.length) * 100;
+      fill.style.width = pct + "%";
+
+      // Faces
+      clear(frontEl);
+      clear(backEl);
+      frontEl.appendChild(el("div", { class: "dg-flashcard-eyebrow" }, "TERM"));
+      frontEl.appendChild(el("div", { class: "dg-flashcard-text" }, card.t));
+      frontEl.appendChild(el("div", { class: "dg-flashcard-tip" }, "↑ to reveal"));
+
+      backEl.appendChild(el("div", { class: "dg-flashcard-eyebrow", style: { color: "#FF9DC3" } }, "DEFINITION"));
+      backEl.appendChild(el("div", { class: "dg-flashcard-text" }, card.d));
+      backEl.appendChild(el("div", { class: "dg-flashcard-tip" }, "→ for next · ↓ to hide"));
+
+      cardEl.classList.toggle("is-flipped", flipped);
+      stage.style.display = "";
+      hint.style.display = "";
+      progress.style.display = "";
+      doneEl.style.display = "none";
+    }
+
+    render();
+
+    // ---- Keyboard ----
+
+    STUDY_KEY_HANDLER = (e) => {
+      const tag = (e.target && e.target.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea") return;
+      switch (e.key) {
+        case "ArrowUp":
+          e.preventDefault();
+          if (!flipped) { flipped = true; render(); }
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          if (flipped) { flipped = false; render(); }
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          prev();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          next();
+          break;
+        case " ":
+          e.preventDefault();
+          flipped = !flipped;
+          render();
+          break;
+        case "s":
+        case "S":
+          shuffle(); render();
+          toast("Shuffled");
+          break;
+        case "r":
+        case "R":
+          restart(); render();
+          toast("Restarted");
+          break;
+      }
+    };
+    document.addEventListener("keydown", STUDY_KEY_HANDLER);
+  }
+
+  function kbHint(key) {
+    return el("kbd", { class: "dg-kbd" }, key);
+  }
+
   // -------- Routing --------------------------------------------------
 
   function parseHashQuery() {
@@ -476,9 +815,16 @@
   }
 
   function route() {
+    // Tear down any study key handler when leaving the route
+    if (STUDY_KEY_HANDLER) {
+      document.removeEventListener("keydown", STUDY_KEY_HANDLER);
+      STUDY_KEY_HANDLER = null;
+    }
     const path = getRoute();
     if (path === "#/cards" || path === "#/import-quizlet") {
       renderCards();
+    } else if (path === "#/study") {
+      renderStudy();
     } else {
       renderLanding();
     }
