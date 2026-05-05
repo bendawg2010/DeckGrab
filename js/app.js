@@ -467,16 +467,16 @@
       el("p", null, `We grabbed ${CURRENT_CARDS.length} cards. Pick where to send them.`),
     ));
 
-    // Export bar
+    // Export bar — primary path first
     wrapper.appendChild(el("div", { class: "dg-export-bar" },
-      el("a", { class: "dg-export-btn primary", href: "#/study" }, "📖 Study"),
+      el("button", { class: "dg-export-btn primary", onclick: () => sendToStudyDeck() }, "→ StudyDeck"),
+      el("a", { class: "dg-export-btn", href: "#/study" }, "📖 Study here"),
       el("button", { class: "dg-export-btn", onclick: () => copyTSV() }, "📋 Copy TSV"),
       el("button", { class: "dg-export-btn", onclick: () => copyCSV() }, "📋 Copy CSV"),
       el("button", { class: "dg-export-btn", onclick: () => downloadFile("deck.csv", buildCSV(), "text/csv") }, "⬇ CSV"),
       el("button", { class: "dg-export-btn", onclick: () => downloadFile("deck.tsv", buildTSV(), "text/tab-separated-values") }, "⬇ TSV"),
       el("button", { class: "dg-export-btn", onclick: () => downloadFile("deck-anki.csv", buildAnkiCSV(), "text/csv") }, "⬇ Anki CSV"),
       el("button", { class: "dg-export-btn", onclick: () => downloadFile("deck.json", buildJSON(), "application/json") }, "⬇ JSON"),
-      el("button", { class: "dg-export-btn", onclick: () => sendToStudyDeck() }, "→ StudyDeck"),
     ));
 
     // Cards list

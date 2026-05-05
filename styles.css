@@ -936,56 +936,62 @@ a { color: inherit; }
   transform-style: preserve-3d;
 }
 
+/* StudyDeck-parity card faces. Solid base + gradient wash so text reads
+   cleanly on screen recordings. */
 .dg-flashcard-face {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  border-radius: 28px;
-  padding: 48px 56px;
+  border-radius: 26px;
+  padding: clamp(28px, 5vw, 56px);
   text-align: center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  background: #15101e;
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 24px 60px rgba(0,0,0,0.55);
 }
 .dg-flashcard-front {
   background:
-    radial-gradient(900px 500px at 50% 0%, rgba(255, 180, 84, 0.16), transparent 70%),
-    linear-gradient(180deg, #1f1525 0%, #150a18 100%);
-  border: 1px solid var(--border);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+    radial-gradient(900px 500px at 50% 0%, rgba(255, 180, 84, 0.18), transparent 70%),
+    linear-gradient(180deg, #1f1a2e 0%, #15101e 100%);
 }
 .dg-flashcard-back {
   background:
-    radial-gradient(900px 500px at 50% 0%, rgba(193, 71, 255, 0.20), transparent 70%),
-    linear-gradient(180deg, #1c0e2c 0%, #110618 100%);
-  border: 1px solid rgba(193, 71, 255, 0.30);
-  box-shadow: 0 24px 60px rgba(193, 71, 255, 0.20);
+    radial-gradient(900px 500px at 50% 0%, rgba(193, 71, 255, 0.22), transparent 70%),
+    linear-gradient(180deg, #221830 0%, #16101f 100%);
+  border-color: rgba(193, 71, 255, 0.30);
   transform: rotateX(180deg);
 }
 
 .dg-flashcard-eyebrow {
-  font-size: 12px; font-weight: 800; letter-spacing: 1.2px;
+  font-size: 12px; font-weight: 800; letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--orange);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 .dg-flashcard-text {
-  font-size: clamp(32px, 4.4vw, 52px);
+  font-size: clamp(28px, 4.4vw, 56px);
   font-weight: 800;
-  letter-spacing: -1.4px;
+  letter-spacing: -1.2px;
   line-height: 1.15;
   color: var(--text);
   max-width: 100%;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 .dg-flashcard-back .dg-flashcard-text {
-  font-size: clamp(20px, 2.8vw, 32px);
+  font-size: clamp(20px, 2.8vw, 36px);
   font-weight: 600;
   letter-spacing: -0.4px;
   line-height: 1.4;
   color: rgba(255,255,255,0.92);
 }
 .dg-flashcard-tip {
-  position: absolute; bottom: 22px; left: 0; right: 0;
+  position: absolute; bottom: 16px; left: 0; right: 0;
   text-align: center;
   font-size: 12px; font-weight: 700;
   color: var(--text-dim);
