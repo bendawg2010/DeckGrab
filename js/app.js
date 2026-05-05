@@ -700,7 +700,7 @@
 
     // Hint row
     const hint = el("div", { class: "dg-study-hint" },
-      el("span", null, kbHint("↑"), " or click to flip"),
+      el("span", null, kbHint("↑"), " ", kbHint("↓"), " or click to flip"),
       el("span", null, kbHint("←"), " ", kbHint("→"), " navigate"),
       el("span", null, kbHint("S"), " shuffle"),
       el("span", null, kbHint("R"), " restart"),
@@ -778,11 +778,11 @@
       clear(backEl);
       frontEl.appendChild(el("div", { class: "dg-flashcard-eyebrow" }, "TERM"));
       frontEl.appendChild(el("div", { class: "dg-flashcard-text" }, card.t));
-      frontEl.appendChild(el("div", { class: "dg-flashcard-tip" }, "↑ to reveal"));
+      frontEl.appendChild(el("div", { class: "dg-flashcard-tip" }, "↑ ↓ or click to flip"));
 
       backEl.appendChild(el("div", { class: "dg-flashcard-eyebrow", style: { color: "#FF9DC3" } }, "DEFINITION"));
       backEl.appendChild(el("div", { class: "dg-flashcard-text" }, card.d));
-      backEl.appendChild(el("div", { class: "dg-flashcard-tip" }, "→ for next · ↓ to hide"));
+      backEl.appendChild(el("div", { class: "dg-flashcard-tip" }, "→ next · ← prev · ↑↓ flip"));
 
       cardEl.classList.toggle("is-flipped", flipped);
       stage.style.display = "";
@@ -800,12 +800,12 @@
       if (tag === "input" || tag === "textarea") return;
       switch (e.key) {
         case "ArrowUp":
-          e.preventDefault();
-          if (!flipped) { flipped = true; render(); }
-          break;
         case "ArrowDown":
+        case " ":
+          // Up + Down + Space all flip / unflip the card
           e.preventDefault();
-          if (flipped) { flipped = false; render(); }
+          flipped = !flipped;
+          render();
           break;
         case "ArrowLeft":
           e.preventDefault();
@@ -814,11 +814,6 @@
         case "ArrowRight":
           e.preventDefault();
           next();
-          break;
-        case " ":
-          e.preventDefault();
-          flipped = !flipped;
-          render();
           break;
         case "s":
         case "S":
