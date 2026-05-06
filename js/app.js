@@ -13,6 +13,18 @@
 
   const BOOKMARKLET = "javascript:" + encodeURIComponent(SCRAPER);
 
+  // -------- Safari "simple version" bookmarklet ----------------------
+  // Fully synchronous scraper. Doesn't open a new tab automatically
+  // (Safari blocks window.open after async work). Instead it paints an
+  // inline overlay on top of the Quizlet page with a card preview, a
+  // "Copy TSV" button (uses document.execCommand) and an "Open in
+  // DeckGrab →" link the user clicks themselves — that click counts as
+  // a fresh user gesture that Safari allows. No await, no clipboard
+  // API, no popup dance.
+  const SCRAPER_SIMPLE = "(()=>{const c=[],S=new Set(),H=new Set(['term','word','question','prompt','front','definition','meaning','answer','translation','back']),X=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\\s+/g,' ').trim(),A=(t,d)=>{t=X(t);d=X(d);if(!t||!d||t===d||t.length>500||d.length>2000)return;const tl=t.toLowerCase(),dl=d.toLowerCase();if(H.has(tl)&&H.has(dl))return;if(d.length>t.length+2&&d.startsWith(t+' '))d=d.slice(t.length+1).trim();else if(t.length>d.length+2&&t.startsWith(d+' '))t=t.slice(d.length+1).trim();else if(d.length>t.length+2&&d.endsWith(' '+t))d=d.slice(0,d.length-t.length-1).trim();else if(t.length>d.length+2&&t.endsWith(' '+d))t=t.slice(0,t.length-d.length-1).trim();if(!t||!d||t===d)return;const k=t+'\\u0000'+d;if(S.has(k))return;S.add(k);c.push({t,d})};const SK=n=>{if(!n)return true;if(n.querySelector&&n.querySelector('video,iframe,audio,canvas'))return true;const al=(n.getAttribute&&(n.getAttribute('aria-label')||''))||'';if(/video|player|audio|playback/i.test(al))return true;const role=(n.getAttribute&&(n.getAttribute('role')||''))||'';if(role==='dialog'||role==='button'||role==='banner'||role==='alert'||role==='status')return true;return false};const G=side=>{if(!side)return null;if(typeof side.text==='string')return side.text;if(typeof side.content==='string')return side.content;if(typeof side.plainText==='string')return side.plainText;if(Array.isArray(side.media)&&side.media[0]){const m=side.media[0];if(typeof m.text==='string')return m.text;if(typeof m.plainText==='string')return m.plainText;if(typeof m.content==='string')return m.content}return null};const PAIRS=[['word','definition'],['term','definition'],['prompt','answer'],['front','back'],['frontText','backText'],['question','answer'],['side1Text','side2Text'],['termText','definitionText']];const nd=document.getElementById('__NEXT_DATA__');if(nd){try{const W=o=>{if(!o||typeof o!=='object')return;if(Array.isArray(o))return o.forEach(W);for(const[k1,k2]of PAIRS){if(typeof o[k1]==='string'&&typeof o[k2]==='string')A(o[k1],o[k2])}if(o.cardSides){const s=Array.isArray(o.cardSides)?o.cardSides:Object.values(o.cardSides);if(s.length>=2){const t=G(s[0]),d=G(s[1]);if(t&&d)A(t,d)}}for(const k in o)W(o[k])};W(JSON.parse(nd.textContent))}catch(e){}}if(c.length<3){document.querySelectorAll('script').forEach(s=>{const x=s.textContent||'';const re=/\"word\":\"((?:[^\"\\\\]|\\\\.)*)\",\"definition\":\"((?:[^\"\\\\]|\\\\.)*)\"/g;for(const m of x.matchAll(re)){try{A(JSON.parse('\"'+m[1]+'\"'),JSON.parse('\"'+m[2]+'\"'))}catch(e){}}});}const TS=['[data-testid*=\"word\"]','[data-testid*=\"term\"]','[class*=\"wordText\"]','[class*=\"TermText\"][class*=\"word\"]','[class*=\"SetPageTerm-word\"]','[class*=\"Term__word\"]','.SetPageTerm-word'];const DS=['[data-testid*=\"definition\"]','[class*=\"definitionText\"]','[class*=\"TermText\"][class*=\"definition\"]','[class*=\"SetPageTerm-definition\"]','[class*=\"Term__definition\"]','.SetPageTerm-definition'];const CONT='[class*=\"SetPageTerm\"],[class*=\"erm-content\"],li[id*=\"term\"],[data-testid*=\"term-card\"],[data-testid*=\"set-page-term\"],[class*=\"TermPair\"],[class*=\"StudySetPageTerm\"],article[class*=\"Term\"]';document.querySelectorAll(CONT).forEach(n=>{if(SK(n))return;let tEl=null,dEl=null;for(const s of TS){if(!tEl)tEl=n.querySelector(s)}for(const s of DS){if(!dEl)dEl=n.querySelector(s)}if(tEl&&dEl)A(tEl.innerText||tEl.textContent,dEl.innerText||dEl.textContent)});if(!c.length){alert('DeckGrab: no cards found. Try scrolling the Quizlet page to the bottom first to load every card, then click the bookmark again.');return}const out=c.map(o=>o.t+'\\t'+o.d).join('\\n');const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(8,4,18,0.92);backdrop-filter:blur(10px);z-index:2147483647;display:grid;place-items:center;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;animation:dgo 0.2s ease-out';const sty=document.createElement('style');sty.textContent='@keyframes dgo{from{opacity:0}to{opacity:1}}@keyframes dgs{from{transform:scale(0.94);opacity:0}to{transform:scale(1);opacity:1}}';document.head.appendChild(sty);const card=document.createElement('div');card.style.cssText='position:relative;background:linear-gradient(180deg,#1f1525 0%,#150a18 100%);border:1px solid rgba(255,255,255,0.10);border-radius:24px;padding:32px;max-width:540px;width:90%;color:white;box-shadow:0 32px 80px rgba(0,0,0,0.65);animation:dgs 0.32s cubic-bezier(0.18,0.78,0.36,1)';const eb=document.createElement('div');eb.textContent='SAFARI SIMPLE MODE';eb.style.cssText='display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(15,181,238,0.16);border:1px solid rgba(15,181,238,0.40);color:#5fc5ed;font-size:11px;font-weight:800;letter-spacing:1.2px;margin-bottom:14px';card.appendChild(eb);const title=document.createElement('h1');title.textContent='Got '+c.length+' cards';title.style.cssText='font-size:36px;font-weight:800;letter-spacing:-1.2px;margin:0 0 8px;background:linear-gradient(135deg,#FFB454,#FF6B6B,#C147FF);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.05';card.appendChild(title);const sub=document.createElement('p');sub.textContent='Tap a button below to copy or open them in DeckGrab.';sub.style.cssText='font-size:14px;color:rgba(255,255,255,0.62);margin:0 0 20px;font-weight:500;line-height:1.5';card.appendChild(sub);const pv=document.createElement('div');pv.style.cssText='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px 14px;margin-bottom:20px;max-height:200px;overflow-y:auto';c.slice(0,5).forEach((o,i)=>{const r=document.createElement('div');r.style.cssText='display:flex;justify-content:space-between;gap:14px;padding:8px 0;font-size:13px;'+(i<Math.min(c.length-1,4)?'border-bottom:1px solid rgba(255,255,255,0.05)':'');const tt=document.createElement('span');tt.textContent=o.t;tt.style.cssText='font-weight:700;letter-spacing:-0.2px;flex-shrink:0;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';const dd=document.createElement('span');dd.textContent=o.d;dd.style.cssText='color:rgba(255,255,255,0.62);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';r.appendChild(tt);r.appendChild(dd);pv.appendChild(r)});if(c.length>5){const m=document.createElement('div');m.textContent='\\u2026 + '+(c.length-5)+' more';m.style.cssText='font-size:11px;color:rgba(255,255,255,0.45);font-weight:700;text-align:center;padding:8px 0;letter-spacing:0.4px';pv.appendChild(m)}card.appendChild(pv);const br=document.createElement('div');br.style.cssText='display:flex;gap:10px';const cp=document.createElement('button');cp.textContent='\\ud83d\\udccb Copy TSV';cp.type='button';cp.style.cssText='flex:1;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.16);color:white;font-size:14px;font-weight:800;letter-spacing:-0.2px;cursor:pointer;font-family:inherit';cp.onclick=function(){const ta=document.createElement('textarea');ta.value=out;ta.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cp.textContent=ok?'\\u2713 Copied!':'Copy failed';setTimeout(()=>{cp.textContent='\\ud83d\\udccb Copy TSV'},1800)};const op=document.createElement('a');op.textContent='Open in DeckGrab \\u2192';op.target='_blank';op.rel='noopener';op.style.cssText='flex:1.2;padding:14px 22px;border-radius:14px;background:linear-gradient(135deg,#FFB454,#FF6B6B,#C147FF);color:white;font-size:15px;font-weight:800;letter-spacing:-0.2px;text-decoration:none;text-align:center;box-shadow:0 12px 36px rgba(193,71,255,0.45);cursor:pointer';op.href='https://deckgrab.pages.dev/#/cards?n='+c.length;op.onclick=function(){const ta=document.createElement('textarea');ta.value=out;ta.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);if(ok)op.href='https://deckgrab.pages.dev/#/cards?n='+c.length+'&c=1'};br.appendChild(cp);br.appendChild(op);card.appendChild(br);const cl=document.createElement('button');cl.textContent='\\u00d7';cl.type='button';cl.style.cssText='position:absolute;top:14px;right:14px;background:transparent;border:none;color:rgba(255,255,255,0.45);font-size:26px;cursor:pointer;width:36px;height:36px;border-radius:8px;font-family:inherit;line-height:1';cl.onclick=()=>ov.remove();card.appendChild(cl);ov.onclick=function(e){if(e.target===ov)ov.remove()};ov.appendChild(card);document.body.appendChild(ov)})();";
+
+  const BOOKMARKLET_SIMPLE = "javascript:" + encodeURIComponent(SCRAPER_SIMPLE);
+
   // -------- Tiny DOM helpers -----------------------------------------
 
   function el(tag, attrs, ...children) {
@@ -133,14 +145,14 @@
         el("strong", null, "bookmarks bar"),
         ". Click it on any Quizlet set page to import.",
       ),
-      // Browser support notice — Safari doesn't work yet
+      // Browser support notice — point Safari users to the simple version below
       el("div", { class: "dg-safari-notice", role: "note" },
         el("span", { class: "dg-safari-notice-icon", "aria-hidden": "true" }, "⚠"),
         el("div", null,
-          el("strong", null, "No Safari support right now."),
-          " The bookmarklet works great in ",
-          el("strong", null, "Chrome, Firefox, Edge, Brave, Arc"),
-          " — and any other Chromium browser. Working on Safari support.",
+          el("strong", null, "On Safari?"),
+          " The button above won’t work — Safari blocks the popup it opens. Use the ",
+          el("strong", null, "Simple version (Safari)"),
+          " below instead. It runs differently and stays on the page.",
         ),
       ),
       // Helpful tip for users without a bookmarks bar visible
@@ -149,6 +161,42 @@
       makeManualBookmarkFallback(),
     );
     root.appendChild(drop);
+
+    // ---- Safari-friendly alternate bookmarklet ----
+    const simplePill = el("a", {
+      class: "dg-pill dg-pill-simple",
+      href: BOOKMARKLET_SIMPLE,
+      title: "Drag this to your bookmarks bar — Safari simple version",
+      onclick: (e) => {
+        e.preventDefault();
+        toast("Don’t click — DRAG it up to your bookmarks bar.");
+      },
+      draggable: true,
+    }, "🦺 Grab cards (Safari)");
+
+    const simpleZone = el("section", { class: "dg-bookmark-zone dg-bookmark-zone-simple" },
+      el("div", { class: "dg-pill-eyebrow" }, "Simple version · for Safari"),
+      el("div", { class: "pill-row" }, simplePill),
+      el("div", { class: "dg-bookmark-instructions" },
+        el("strong", null, "Drag this button"),
+        " to your bookmarks bar instead. It works ",
+        el("strong", null, "differently"),
+        " — when you click it on a Quizlet set, it shows the cards in an overlay right on the page with ",
+        el("em", null, "Copy"),
+        " and ",
+        el("em", null, "Open in DeckGrab"),
+        " buttons. No popups, no automatic redirect.",
+      ),
+      el("ul", { class: "dg-simple-notes" },
+        el("li", null,
+          el("strong", null, "Scroll the Quizlet page to the bottom first"),
+          " — this version doesn’t auto-load lazy cards.",
+        ),
+        el("li", null, "Tap ", el("strong", null, "Copy TSV"), " to put the cards on your clipboard, or ", el("strong", null, "Open in DeckGrab →"), " to send them straight to the study app."),
+        el("li", null, "Use the original ", el("strong", null, "⭐ Grab cards"), " button above on Chrome / Firefox / Edge / Brave / Arc — it’s smoother."),
+      ),
+    );
+    root.appendChild(simpleZone);
 
     // Demo video — actual yoink in action
     const video = el("video", {
