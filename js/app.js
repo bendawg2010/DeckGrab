@@ -133,6 +133,20 @@
         el("strong", null, "bookmarks bar"),
         ". Click it on any Quizlet set page to import.",
       ),
+      // Helpful tip for users without a bookmarks bar visible
+      el("div", { class: "dg-bookmark-tip" },
+        "💡 ",
+        el("strong", null, "Don’t see a bookmarks bar?"),
+        " Press ",
+        el("kbd", null, "⌘ Shift B"),
+        " on Mac or ",
+        el("kbd", null, "Ctrl Shift B"),
+        " on Windows / Linux to show it. Or right-click the button → ",
+        el("em", null, "Bookmark this link"),
+        ".",
+      ),
+      // Manual-install fallback (collapsed by default)
+      makeManualBookmarkFallback(),
     );
     root.appendChild(drop);
 
@@ -188,6 +202,66 @@
     ));
 
     root.appendChild(makeFooter());
+  }
+
+  // Three installation methods, with method 1 (drag) as primary above.
+  // This builds the collapsible "Or install it manually" panel below the
+  // pill, covering right-click + paste-as-bookmark.
+  function makeManualBookmarkFallback() {
+    const details = el("details", { class: "dg-manual-install" });
+    const summary = el("summary", null, "Other ways to install the bookmark →");
+    details.appendChild(summary);
+
+    const grid = el("div", { class: "dg-manual-grid" });
+
+    // Method 2 — right-click
+    grid.appendChild(el("div", { class: "dg-manual-card" },
+      el("div", { class: "dg-manual-num" }, "2"),
+      el("div", { class: "dg-manual-name" }, "Right-click"),
+      el("ol", { class: "dg-manual-steps" },
+        el("li", null, "Right-click the ", el("strong", null, "⭐ Grab cards"), " button above."),
+        el("li", null, "Pick ", el("em", null, "Bookmark this link"), " (Chrome) or ", el("em", null, "Add link to bookmarks"), " (Safari/Firefox)."),
+        el("li", null, "Save it anywhere — folder, bookmarks menu, anywhere."),
+      ),
+    ));
+
+    // Method 3 — paste URL
+    const urlBox = el("textarea", {
+      class: "dg-manual-url",
+      readonly: "readonly",
+      rows: "4",
+      "aria-label": "Bookmarklet URL — copy this",
+    });
+    urlBox.value = BOOKMARKLET;
+    const copyBtn = el("button", {
+      class: "dg-export-btn primary",
+      onclick: async () => {
+        try {
+          await navigator.clipboard.writeText(BOOKMARKLET);
+          toast("✓ Bookmarklet URL copied — now paste it as a new bookmark");
+        } catch (e) {
+          // Fallback: select the textarea so the user can Cmd+C manually
+          urlBox.focus();
+          urlBox.select();
+          toast("Press Cmd/Ctrl+C to copy");
+        }
+      },
+    }, "📋 Copy the URL");
+
+    grid.appendChild(el("div", { class: "dg-manual-card" },
+      el("div", { class: "dg-manual-num" }, "3"),
+      el("div", { class: "dg-manual-name" }, "Copy + paste a bookmark"),
+      el("ol", { class: "dg-manual-steps" },
+        el("li", null, "Hit ", el("kbd", null, "⌘ D"), " / ", el("kbd", null, "Ctrl D"), " on any page to add a bookmark, then edit it."),
+        el("li", null, "Replace the URL with the one below."),
+        el("li", null, "Rename it to ", el("strong", null, "Grab cards"), " and save."),
+      ),
+      urlBox,
+      copyBtn,
+    ));
+
+    details.appendChild(grid);
+    return details;
   }
 
   function makeSteps() {
