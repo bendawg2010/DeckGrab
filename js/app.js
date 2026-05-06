@@ -794,12 +794,14 @@
   }
 
   async function sendToStudyDeck() {
-    try {
-      await navigator.clipboard.writeText(buildTSV());
-    } catch (e) {
-      toast("Couldn’t copy to clipboard — open StudyDeck and paste manually");
-    }
-    window.open(`https://studydeck.pages.dev/#/import-quizlet?n=${CURRENT_CARDS.length}&c=1`, "_blank");
+    const tsv = buildTSV();
+    // Best-effort clipboard write so users can also Cmd+V into StudyDeck's
+    // manual fallback if needed. Doesn't block — Safari may reject.
+    try { await navigator.clipboard.writeText(tsv); } catch (e) {}
+    // Always pass the TSV via URL fragment too. StudyDeck reads it directly,
+    // so the cross-origin clipboard hop never happens — works in Safari.
+    const url = `https://studydeck.pages.dev/#/import-quizlet?n=${CURRENT_CARDS.length}&d=${encodeURIComponent(tsv)}`;
+    window.open(url, "_blank");
   }
 
   // -------- Study mode (#/study) -------------------------------------
