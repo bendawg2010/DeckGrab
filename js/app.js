@@ -134,17 +134,7 @@
         ". Click it on any Quizlet set page to import.",
       ),
       // Helpful tip for users without a bookmarks bar visible
-      el("div", { class: "dg-bookmark-tip" },
-        "💡 ",
-        el("strong", null, "Don’t see a bookmarks bar?"),
-        " Press ",
-        el("kbd", null, "⌘ Shift B"),
-        " on Mac or ",
-        el("kbd", null, "Ctrl Shift B"),
-        " on Windows / Linux to show it. Or right-click the button → ",
-        el("em", null, "Bookmark this link"),
-        ".",
-      ),
+      makeBookmarkBarHelp(),
       // Manual-install fallback (collapsed by default)
       makeManualBookmarkFallback(),
     );
@@ -202,6 +192,56 @@
     ));
 
     root.appendChild(makeFooter());
+  }
+
+  // Prominent "show your bookmarks bar" tutorial — universal keyboard
+  // shortcut on top, then a grid with menu paths for the major browsers
+  // for users who'd rather click than type a shortcut.
+  function makeBookmarkBarHelp() {
+    const browsers = [
+      { name: "Chrome",  letter: "C", color: "#4285F4",
+        path: "View → Always Show Bookmarks Bar" },
+      { name: "Safari",  letter: "S", color: "#0FB5EE",
+        path: "View → Show Favorites Bar" },
+      { name: "Firefox", letter: "F", color: "#FF7139",
+        path: "View → Toolbars → Bookmarks Toolbar" },
+      { name: "Edge",    letter: "E", color: "#0078D4",
+        path: "Settings → Appearance → Show favorites bar" },
+      { name: "Brave",   letter: "B", color: "#FB542B",
+        path: "View → Always Show Bookmarks Bar" },
+      { name: "Arc",     letter: "A", color: "#FF6B97",
+        path: "Bookmarks live in the sidebar by default" },
+    ];
+
+    const grid = el("div", { class: "dg-browsers-grid" });
+    browsers.forEach((b) => {
+      grid.appendChild(el("div", { class: "dg-browser-card" },
+        el("div", { class: "dg-browser-mark", style: { background: b.color } }, b.letter),
+        el("div", { class: "dg-browser-body" },
+          el("div", { class: "dg-browser-name" }, b.name),
+          el("div", { class: "dg-browser-path" }, b.path),
+        ),
+      ));
+    });
+
+    return el("section", { class: "dg-bar-help" },
+      el("div", { class: "dg-bar-help-eyebrow" }, "💡 Don’t see your bookmarks bar?"),
+      el("h3", { class: "dg-bar-help-title" }, "Show it first."),
+      el("div", { class: "dg-bar-help-shortcut" },
+        el("div", { class: "dg-shortcut-line" },
+          el("kbd", null, "⌘"), " ", el("kbd", null, "Shift"), " ", el("kbd", null, "B"),
+          el("span", { class: "dg-shortcut-platform" }, "Mac"),
+        ),
+        el("div", { class: "dg-shortcut-line" },
+          el("kbd", null, "Ctrl"), " ", el("kbd", null, "Shift"), " ", el("kbd", null, "B"),
+          el("span", { class: "dg-shortcut-platform" }, "Windows / Linux"),
+        ),
+      ),
+      el("div", { class: "dg-bar-help-or" },
+        "Or use the menu in your browser:",
+      ),
+      grid,
+    );
   }
 
   // Three installation methods, with method 1 (drag) as primary above.
