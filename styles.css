@@ -193,6 +193,36 @@ a { color: inherit; }
   font-weight: 700;
 }
 
+/* ========== Safari-not-supported notice ========== */
+
+.dg-safari-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 700px;
+  margin: 18px auto 0;
+  padding: 14px 18px;
+  background: rgba(255, 107, 107, 0.10);
+  border: 1px solid rgba(255, 107, 107, 0.34);
+  border-radius: 14px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(255, 107, 107, 0.10);
+}
+.dg-safari-notice-icon {
+  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.55));
+}
+.dg-safari-notice strong {
+  color: var(--pink);
+  font-weight: 800;
+}
+
 /* ========== "Show your bookmarks bar" tutorial ========== */
 
 .dg-bar-help {
@@ -331,6 +361,38 @@ a { color: inherit; }
   letter-spacing: -0.2px;
   color: var(--text);
   margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dg-browser-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 107, 107, 0.18);
+  border: 1px solid rgba(255, 107, 107, 0.40);
+  color: var(--pink);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.dg-browser-card.is-unsupported {
+  opacity: 0.62;
+  background: rgba(255, 107, 107, 0.05);
+  border-color: rgba(255, 107, 107, 0.22);
+}
+.dg-browser-card.is-unsupported:hover {
+  opacity: 0.85;
+  transform: none;
+}
+.dg-browser-card.is-unsupported .dg-browser-mark {
+  filter: grayscale(0.4);
+}
+.dg-browser-card.is-unsupported .dg-browser-path {
+  color: var(--pink);
+  font-weight: 600;
 }
 .dg-browser-path {
   font-size: 12px;

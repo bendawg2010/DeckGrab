@@ -133,6 +133,16 @@
         el("strong", null, "bookmarks bar"),
         ". Click it on any Quizlet set page to import.",
       ),
+      // Browser support notice — Safari doesn't work yet
+      el("div", { class: "dg-safari-notice", role: "note" },
+        el("span", { class: "dg-safari-notice-icon", "aria-hidden": "true" }, "⚠"),
+        el("div", null,
+          el("strong", null, "No Safari support right now."),
+          " The bookmarklet works great in ",
+          el("strong", null, "Chrome, Firefox, Edge, Brave, Arc"),
+          " — and any other Chromium browser. Working on Safari support.",
+        ),
+      ),
       // Helpful tip for users without a bookmarks bar visible
       makeBookmarkBarHelp(),
       // Manual-install fallback (collapsed by default)
@@ -201,8 +211,6 @@
     const browsers = [
       { name: "Chrome",  letter: "C", color: "#4285F4",
         path: "View → Always Show Bookmarks Bar" },
-      { name: "Safari",  letter: "S", color: "#0FB5EE",
-        path: "View → Show Favorites Bar" },
       { name: "Firefox", letter: "F", color: "#FF7139",
         path: "View → Toolbars → Bookmarks Toolbar" },
       { name: "Edge",    letter: "E", color: "#0078D4",
@@ -211,17 +219,24 @@
         path: "View → Always Show Bookmarks Bar" },
       { name: "Arc",     letter: "A", color: "#FF6B97",
         path: "Bookmarks live in the sidebar by default" },
+      { name: "Safari",  letter: "S", color: "#0FB5EE",
+        path: "Not supported yet — try Chrome / Firefox", unsupported: true },
     ];
 
     const grid = el("div", { class: "dg-browsers-grid" });
     browsers.forEach((b) => {
-      grid.appendChild(el("div", { class: "dg-browser-card" },
+      const card = el("div", {
+        class: "dg-browser-card" + (b.unsupported ? " is-unsupported" : ""),
+      },
         el("div", { class: "dg-browser-mark", style: { background: b.color } }, b.letter),
         el("div", { class: "dg-browser-body" },
-          el("div", { class: "dg-browser-name" }, b.name),
+          el("div", { class: "dg-browser-name" }, b.name,
+            b.unsupported ? el("span", { class: "dg-browser-tag" }, "soon") : null,
+          ),
           el("div", { class: "dg-browser-path" }, b.path),
         ),
-      ));
+      );
+      grid.appendChild(card);
     });
 
     return el("section", { class: "dg-bar-help" },
