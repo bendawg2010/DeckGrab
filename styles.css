@@ -224,6 +224,157 @@ a { color: inherit; }
   box-shadow: 0 20px 56px rgba(15, 181, 238, 0.55);
 }
 
+/* ========== iOS install zone ========== */
+/* Distinct visual identity from the desktop zones — pink/coral so it
+   reads "for your phone" at a glance. Uses a 3-card grid for the
+   walkthrough plus a tip box at the bottom. */
+
+.dg-ios-zone {
+  position: relative;
+  margin-top: 26px;
+  background: rgba(255, 122, 69, 0.06);
+  border-color: rgba(255, 122, 69, 0.32);
+}
+
+.dg-pill-eyebrow.dg-ios-eyebrow {
+  display: inline-block;
+  background: rgba(255, 122, 69, 0.18);
+  border-color: rgba(255, 122, 69, 0.42);
+  color: #ff9f7a;
+}
+
+.dg-ios-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  margin: 0 0 8px;
+  line-height: 1.2;
+  text-align: center;
+  background: linear-gradient(135deg, #FFB454, #FF7A45, #C72C48);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dg-ios-sub {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 auto 22px;
+  max-width: 560px;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+.dg-ios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 760px) {
+  .dg-ios-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dg-ios-step {
+  position: relative;
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  text-align: left;
+}
+
+.dg-ios-num {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #FFB454, #FF7A45, #C72C48);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(255, 122, 69, 0.45);
+}
+
+.dg-ios-step-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  margin: 6px 0 10px;
+}
+
+.dg-ios-step-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.dg-ios-step-list li {
+  margin-bottom: 6px;
+}
+
+.dg-ios-step-list li:last-child {
+  margin-bottom: 0;
+}
+
+.dg-ios-step-list strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.dg-ios-step-list em {
+  font-style: normal;
+  color: #ff9f7a;
+  font-weight: 700;
+}
+
+.dg-ios-step .dg-manual-url {
+  margin-top: 14px;
+}
+
+.dg-ios-step .dg-export-btn {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.dg-ios-tip {
+  margin-top: 6px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(255, 122, 69, 0.06);
+  border: 1px solid rgba(255, 122, 69, 0.20);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-align: left;
+}
+
+.dg-ios-tip strong {
+  color: #ff9f7a;
+  font-weight: 800;
+}
+
+.dg-ios-tip code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+
 /* ========== "Show your bookmarks bar" tutorial ========== */
 
 .dg-bar-help {

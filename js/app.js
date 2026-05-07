@@ -180,6 +180,15 @@
     );
     root.appendChild(simpleZone);
 
+    // ---- iOS install zone ----
+    // iOS doesn't have a bookmarks bar to drag onto, but Safari DOES run
+    // bookmarklets. Trick: bookmark any page, edit the bookmark URL,
+    // paste the javascript: URL into it. Then run from address-bar
+    // autocomplete on the Quizlet set. The Safari simple bookmarklet
+    // (sync IIFE + URL-fragment handoff) is what we install — it works
+    // identically on iOS Safari and macOS Safari.
+    root.appendChild(makeIOSInstall());
+
     // Demo video — actual yoink in action
     const video = el("video", {
       src: "demo.mp4",
@@ -286,6 +295,92 @@
         "Or use the menu in your browser:",
       ),
       grid,
+    );
+  }
+
+  // iOS install zone — full how-to for Safari on iPhone / iPad.
+  // iOS Safari can't drag bookmarklets onto a bar (there's no bar), and
+  // pasting a javascript: URL into the New Bookmark dialog gets stripped.
+  // The workaround that works in 2024+ iOS: bookmark any page, then
+  // EDIT that bookmark's URL — Safari leaves javascript: alone in edit
+  // mode. Once installed, the user runs it from address-bar autocomplete.
+  function makeIOSInstall() {
+    const iosURLBox = el("textarea", {
+      class: "dg-manual-url",
+      readonly: "readonly",
+      rows: "4",
+      "aria-label": "iOS bookmarklet URL — copy this",
+    });
+    iosURLBox.value = BOOKMARKLET_SIMPLE;
+
+    const iosCopyBtn = el("button", {
+      class: "dg-export-btn primary",
+      onclick: async () => {
+        try {
+          await navigator.clipboard.writeText(BOOKMARKLET_SIMPLE);
+          toast("✓ Copied — paste into your bookmark's URL field");
+        } catch (e) {
+          // iOS will refuse clipboard.writeText if not user-gesture.
+          // Surface the textarea so the user can long-press → Copy.
+          iosURLBox.focus();
+          iosURLBox.select();
+          toast("Long-press the box, choose Copy");
+        }
+      },
+    }, "📋 Copy iOS bookmarklet");
+
+    const grid = el("div", { class: "dg-ios-grid" });
+
+    // Step 1 — bookmark this page so there's something to edit
+    grid.appendChild(el("div", { class: "dg-ios-step" },
+      el("div", { class: "dg-ios-num" }, "1"),
+      el("div", { class: "dg-ios-step-name" }, "Bookmark this page"),
+      el("ol", { class: "dg-ios-step-list" },
+        el("li", null, "Tap the ", el("strong", null, "Share"), " button (the square with an up-arrow)."),
+        el("li", null, "Choose ", el("em", null, "Add Bookmark"), "."),
+        el("li", null, "Tap ", el("strong", null, "Save"), " — any folder is fine."),
+      ),
+    ));
+
+    // Step 2 — replace the bookmark URL with the javascript: bookmarklet
+    grid.appendChild(el("div", { class: "dg-ios-step" },
+      el("div", { class: "dg-ios-num" }, "2"),
+      el("div", { class: "dg-ios-step-name" }, "Swap its URL for this"),
+      el("ol", { class: "dg-ios-step-list" },
+        el("li", null, "Tap the ", el("strong", null, "Bookmarks"), " book icon at the bottom."),
+        el("li", null, "Tap ", el("em", null, "Edit"), " (bottom-right corner)."),
+        el("li", null, "Tap your bookmark, clear the URL, and paste the one below."),
+        el("li", null, "Rename it ", el("strong", null, "DeckGrab"), " and tap ", el("em", null, "Done"), "."),
+      ),
+      iosURLBox,
+      iosCopyBtn,
+    ));
+
+    // Step 3 — run it from address bar
+    grid.appendChild(el("div", { class: "dg-ios-step" },
+      el("div", { class: "dg-ios-num" }, "3"),
+      el("div", { class: "dg-ios-step-name" }, "Run it on Quizlet"),
+      el("ol", { class: "dg-ios-step-list" },
+        el("li", null, "Open any Quizlet set in Safari and scroll to the bottom so all terms load."),
+        el("li", null, "Tap the address bar, type ", el("strong", null, "deckgrab"), "."),
+        el("li", null, "Tap the matching ", el("em", null, "Bookmarks"), " suggestion to run it."),
+        el("li", null, "Cards show in an overlay → tap ", el("strong", null, "Open in DeckGrab"), "."),
+      ),
+    ));
+
+    return el("section", { class: "dg-bookmark-zone dg-ios-zone" },
+      el("div", { class: "dg-pill-eyebrow dg-ios-eyebrow" }, "📱 iPhone or iPad · iOS Safari"),
+      el("h3", { class: "dg-ios-title" }, "iOS doesn’t have a bookmarks bar — but Safari still runs bookmarklets."),
+      el("p", { class: "dg-ios-sub" },
+        "Three taps to install once, then it’s a one-tap yoink on every Quizlet set. About 60 seconds of setup."
+      ),
+      grid,
+      el("div", { class: "dg-ios-tip" },
+        el("strong", null, "Why the URL swap?"),
+        " iOS Safari strips ",
+        el("code", null, "javascript:"),
+        " URLs from the New-Bookmark dialog — but it leaves them alone when you edit an existing bookmark. So we make a placeholder bookmark, then swap its URL.",
+      ),
     );
   }
 
