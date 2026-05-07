@@ -174,6 +174,70 @@
     );
   }
 
+  // -------- Browser extension zone (best UX for desktop) -------------
+  // Manifest-V3 extension that injects a floating "Yoink to DeckGrab"
+  // button on every Quizlet set page. One click → cards land in
+  // DeckGrab via URL fragment. Same scrape logic as the bookmarklet
+  // (NEXT_DATA walk + regex + DOM fallback). No bot detection
+  // because it runs inside the user's own browser.
+
+  function makeExtensionZone() {
+    const grid = el("div", { class: "dg-ext-grid" });
+
+    grid.appendChild(el("div", { class: "dg-ext-step" },
+      el("div", { class: "dg-ext-num" }, "1"),
+      el("div", { class: "dg-ext-step-name" }, "Download the extension"),
+      el("p", null,
+        "It's a tiny ", el("code", null, "deckgrab-extension.zip"),
+        " (~14 KB). Same flashcard scraping power as the bookmarklet, no install dance.",
+      ),
+      el("a", {
+        class: "dg-ext-dl-btn",
+        href: "/deckgrab-extension.zip",
+        download: "deckgrab-extension.zip",
+      }, "↓ Download deckgrab-extension.zip"),
+    ));
+
+    grid.appendChild(el("div", { class: "dg-ext-step" },
+      el("div", { class: "dg-ext-num" }, "2"),
+      el("div", { class: "dg-ext-step-name" }, "Unzip + load it"),
+      el("p", null,
+        "Double-click the zip to unzip — you get a ", el("strong", null, "deckgrab-extension"), " folder.",
+      ),
+      el("ol", { class: "dg-ext-substeps" },
+        el("li", null, "Open ", el("code", null, "chrome://extensions"), " (Chrome / Edge / Brave / Arc) or ", el("code", null, "about:debugging"), " (Firefox)."),
+        el("li", null, "Toggle ", el("strong", null, "Developer mode"), " on (top-right)."),
+        el("li", null, "Click ", el("strong", null, "Load unpacked"), " → pick the unzipped ", el("code", null, "deckgrab-extension"), " folder."),
+      ),
+    ));
+
+    grid.appendChild(el("div", { class: "dg-ext-step" },
+      el("div", { class: "dg-ext-num" }, "3"),
+      el("div", { class: "dg-ext-step-name" }, "Yoink any Quizlet set"),
+      el("p", null,
+        "Open any Quizlet set page. A floating ", el("strong", null, "🦺 Yoink to DeckGrab"),
+        " button appears in the bottom-right corner. Click it → cards open in DeckGrab. That's the whole flow.",
+      ),
+    ));
+
+    return el("section", { class: "dg-ext-zone" },
+      el("div", { class: "dg-ext-eyebrow" }, "🧩 New · Browser Extension"),
+      el("h2", { class: "dg-ext-title" }, "One click on every Quizlet page."),
+      el("p", { class: "dg-ext-sub" },
+        "Works on Chrome, Edge, Brave, Arc, Firefox, and any Chromium-based browser. Free, open source, no permissions beyond ",
+        el("code", null, "quizlet.com"),
+        ". Drops in via the extensions developer mode — three steps, ~30 seconds.",
+      ),
+      grid,
+      el("div", { class: "dg-ext-tip" },
+        el("strong", null, "Why developer mode?"),
+        " Listing on the Chrome Web Store costs $5 + a few weeks of review. Side-loading is instant and the source is right there for you to inspect ",
+        el("a", { href: "https://github.com/bendawg2010/DeckGrab/tree/main/extension", target: "_blank", rel: "noopener" }, "on GitHub"),
+        ".",
+      ),
+    );
+  }
+
   // -------- Header / footer (shared) ---------------------------------
 
   function makeHeader() {
@@ -217,8 +281,13 @@
     );
     root.appendChild(hero);
 
-    // Paste-URL zone — primary path for iOS/Android, also works on desktop
+    // Paste-URL zone — experimental but discoverable
     root.appendChild(makePasteURLZone());
+
+    // Browser-extension zone — best UX for desktop (one-click yoink
+    // floating button on every Quizlet page). Sits above the
+    // bookmarklet drag zone since it's the easier path now.
+    root.appendChild(makeExtensionZone());
 
     // The bookmarklet drag zone
     const pill = el("a", {

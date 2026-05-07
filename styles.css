@@ -287,6 +287,174 @@ a { color: inherit; }
 }
 .dg-paste-tip strong { color: var(--text); }
 
+/* ========== Browser Extension zone ========== */
+/* Cyan/teal accent so it's visually distinct from the orange/red
+   paste-URL zone above and the orange/red bookmarklet zones below. */
+
+.dg-ext-zone {
+  max-width: 880px;
+  margin: 22px auto 24px;
+  padding: 32px 32px 28px;
+  background: linear-gradient(160deg,
+              rgba(15, 181, 238, 0.10) 0%,
+              rgba(79, 139, 255, 0.10) 50%,
+              rgba(193, 71, 255, 0.08) 100%);
+  border: 1px solid rgba(15, 181, 238, 0.34);
+  border-radius: 24px;
+  text-align: center;
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 20px 60px rgba(15, 181, 238, 0.18);
+}
+
+.dg-ext-eyebrow {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(15, 181, 238, 0.20);
+  border: 1px solid rgba(15, 181, 238, 0.45);
+  color: #5fc5ed;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.dg-ext-title {
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin: 0 0 10px;
+  line-height: 1.12;
+  background: linear-gradient(135deg, #5fc5ed, #4f8bff, #C147FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dg-ext-sub {
+  margin: 0 auto 24px;
+  max-width: 580px;
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  font-weight: 500;
+}
+.dg-ext-sub code {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.dg-ext-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+@media (max-width: 760px) {
+  .dg-ext-grid { grid-template-columns: 1fr; }
+}
+
+.dg-ext-step {
+  position: relative;
+  padding: 22px 18px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.dg-ext-num {
+  position: absolute;
+  top: -14px;
+  left: 18px;
+  width: 30px; height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0FB5EE, #4f8bff, #2B86C5);
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 8px 22px rgba(15, 181, 238, 0.50);
+}
+
+.dg-ext-step-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  margin: 8px 0 8px;
+}
+
+.dg-ext-step p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.dg-ext-step strong { color: var(--text); font-weight: 700; }
+.dg-ext-step code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.dg-ext-substeps {
+  margin: 0 0 0 16px;
+  padding: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  font-weight: 500;
+}
+.dg-ext-substeps li { margin-bottom: 4px; }
+
+.dg-ext-dl-btn {
+  display: inline-block;
+  margin-top: auto;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, #0FB5EE, #4f8bff, #2B86C5);
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(15, 181, 238, 0.40);
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+.dg-ext-dl-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(15, 181, 238, 0.55);
+}
+
+.dg-ext-tip {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  text-align: left;
+}
+.dg-ext-tip strong { color: var(--text); font-weight: 700; }
+.dg-ext-tip a { color: #5fc5ed; text-decoration: underline; }
+
 /* ========== Bookmarklet section ========== */
 
 .dg-bookmark-zone {
