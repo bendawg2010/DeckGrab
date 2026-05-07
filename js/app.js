@@ -187,14 +187,6 @@
         el("em", null, "Open in DeckGrab"),
         " buttons. No popups, no automatic redirect.",
       ),
-      el("ul", { class: "dg-simple-notes" },
-        el("li", null,
-          el("strong", null, "Scroll the Quizlet page to the bottom first"),
-          " — this version doesn’t auto-load lazy cards.",
-        ),
-        el("li", null, "Tap ", el("strong", null, "Copy TSV"), " to put the cards on your clipboard, or ", el("strong", null, "Open in DeckGrab →"), " to send them straight to the study app."),
-        el("li", null, "Use the original ", el("strong", null, "⭐ Grab cards"), " button above on Chrome / Firefox / Edge / Brave / Arc — it’s smoother."),
-      ),
     );
     root.appendChild(simpleZone);
 
