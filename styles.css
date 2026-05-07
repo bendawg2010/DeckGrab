@@ -375,6 +375,49 @@ a { color: inherit; }
   font-size: 12px;
 }
 
+/* ========== Android install zone ========== */
+/* Reuses .dg-ios-grid / .dg-ios-step / .dg-ios-step-list — only the
+   accent color and the eyebrow get re-tinted (green for Android brand). */
+
+.dg-android-zone {
+  position: relative;
+  margin-top: 26px;
+  background: rgba(60, 220, 132, 0.05);
+  border-color: rgba(60, 220, 132, 0.30);
+}
+
+.dg-pill-eyebrow.dg-android-eyebrow {
+  display: inline-block;
+  background: rgba(60, 220, 132, 0.16);
+  border-color: rgba(60, 220, 132, 0.42);
+  color: #6fe5a0;
+}
+
+.dg-android-title {
+  background: linear-gradient(135deg, #6fe5a0, #06D6A0, #118AB2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dg-android-zone .dg-ios-num {
+  background: linear-gradient(135deg, #6fe5a0, #06D6A0, #118AB2);
+  box-shadow: 0 6px 18px rgba(6, 214, 160, 0.40);
+}
+
+.dg-android-zone .dg-ios-step-list em {
+  color: #6fe5a0;
+}
+
+.dg-android-zone .dg-ios-tip {
+  background: rgba(60, 220, 132, 0.05);
+  border-color: rgba(60, 220, 132, 0.20);
+}
+
+.dg-android-zone .dg-ios-tip strong {
+  color: #6fe5a0;
+}
+
 /* ========== "Show your bookmarks bar" tutorial ========== */
 
 .dg-bar-help {

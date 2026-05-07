@@ -189,6 +189,14 @@
     // identically on iOS Safari and macOS Safari.
     root.appendChild(makeIOSInstall());
 
+    // ---- Android install zone ----
+    // Android Chrome / Samsung / Brave / Edge all follow the same pattern
+    // as iOS Safari — no bookmarks bar, but bookmarks-with-edit work,
+    // and address-bar autocomplete fires the bookmarklet against the
+    // current page. Android Firefox's UI is slightly different but the
+    // mechanic is the same.
+    root.appendChild(makeAndroidInstall());
+
     // Demo video — actual yoink in action
     const video = el("video", {
       src: "demo.mp4",
@@ -380,6 +388,98 @@
         " iOS Safari strips ",
         el("code", null, "javascript:"),
         " URLs from the New-Bookmark dialog — but it leaves them alone when you edit an existing bookmark. So we make a placeholder bookmark, then swap its URL.",
+        el("br"),
+        el("br"),
+        el("strong", null, "Using Chrome / Firefox / Edge on iPhone?"),
+        " They all run on WebKit (Apple's rule) but with bookmarklets disabled. Switch to Safari for iOS — it's the only iOS browser that runs them reliably.",
+      ),
+    );
+  }
+
+  // Android install zone — mostly Chrome but the same flow works on
+  // Brave / Edge / Samsung / Opera / Vivaldi (all Chromium) and Android
+  // Firefox. The shared mechanic is: bookmark a page, edit that bookmark
+  // to point at javascript:..., then start typing the bookmark name in
+  // the address bar — Chrome shows the bookmark as a suggestion under
+  // "Bookmarks", and tapping it fires the JS against the page you were
+  // already on.
+  function makeAndroidInstall() {
+    const aURLBox = el("textarea", {
+      class: "dg-manual-url",
+      readonly: "readonly",
+      rows: "4",
+      "aria-label": "Android bookmarklet URL — copy this",
+    });
+    aURLBox.value = BOOKMARKLET_SIMPLE;
+
+    const aCopyBtn = el("button", {
+      class: "dg-export-btn primary",
+      onclick: async () => {
+        try {
+          await navigator.clipboard.writeText(BOOKMARKLET_SIMPLE);
+          toast("✓ Copied — paste into your bookmark's URL field");
+        } catch (e) {
+          aURLBox.focus();
+          aURLBox.select();
+          toast("Long-press the box, choose Copy");
+        }
+      },
+    }, "📋 Copy Android bookmarklet");
+
+    const grid = el("div", { class: "dg-ios-grid" });
+
+    grid.appendChild(el("div", { class: "dg-ios-step" },
+      el("div", { class: "dg-ios-num" }, "1"),
+      el("div", { class: "dg-ios-step-name" }, "Bookmark this page"),
+      el("ol", { class: "dg-ios-step-list" },
+        el("li", null, "Tap the ", el("strong", null, "⋮"), " menu (top-right)."),
+        el("li", null, "Tap the ", el("strong", null, "☆"), " star to bookmark."),
+        el("li", null,
+          el("em", null, "Firefox: ⋮ → Add to → Bookmarks. Samsung Internet: ☰ → ☆."),
+        ),
+      ),
+    ));
+
+    grid.appendChild(el("div", { class: "dg-ios-step" },
+      el("div", { class: "dg-ios-num" }, "2"),
+      el("div", { class: "dg-ios-step-name" }, "Swap its URL for this"),
+      el("ol", { class: "dg-ios-step-list" },
+        el("li", null, "Tap ", el("strong", null, "⋮ → Bookmarks"), " to open the list."),
+        el("li", null, "Tap the ", el("strong", null, "⋮"), " next to the bookmark → ", el("em", null, "Edit"), "."),
+        el("li", null, "Replace the URL with the one below. Rename it ", el("strong", null, "DeckGrab"), "."),
+        el("li", null, "Tap ", el("em", null, "Save"), " (✓ on Firefox)."),
+      ),
+      aURLBox,
+      aCopyBtn,
+    ));
+
+    grid.appendChild(el("div", { class: "dg-ios-step" },
+      el("div", { class: "dg-ios-num" }, "3"),
+      el("div", { class: "dg-ios-step-name" }, "Run it on Quizlet"),
+      el("ol", { class: "dg-ios-step-list" },
+        el("li", null, "Open a Quizlet set, scroll to load all terms."),
+        el("li", null, "Tap the address bar, type ", el("strong", null, "deckgrab"), "."),
+        el("li", null, "Tap the bookmark under ", el("em", null, "Bookmarks"), " in the dropdown."),
+        el("li", null, "Overlay shows the cards → tap ", el("strong", null, "Open in DeckGrab"), "."),
+      ),
+    ));
+
+    return el("section", { class: "dg-bookmark-zone dg-android-zone" },
+      el("div", { class: "dg-pill-eyebrow dg-android-eyebrow" }, "🤖 Android · Chrome / Firefox / Brave / Edge / Samsung"),
+      el("h3", { class: "dg-ios-title dg-android-title" }, "Android works the same way — bookmark, edit, run."),
+      el("p", { class: "dg-ios-sub" },
+        "Same idea as iOS but the menus are slightly different. Steps below cover Chrome; Firefox / Samsung / Brave use the same flow with their own ⋮ menu placement."
+      ),
+      grid,
+      el("div", { class: "dg-ios-tip" },
+        el("strong", null, "Heads-up:"),
+        " when you tap the bookmark from address-bar autocomplete, Chrome shows it grouped under ",
+        el("em", null, "Bookmarks"),
+        ". If it shows under ",
+        el("em", null, "Search suggestions"),
+        " instead, Chrome will treat it as a search query — back out and tap ",
+        el("strong", null, "Bookmarks"),
+        " explicitly.",
       ),
     );
   }
