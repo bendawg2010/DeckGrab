@@ -82,6 +82,98 @@
     }, 1800);
   }
 
+  // -------- Paste-URL zone (server-side fetch path) ------------------
+  // The newest entry point — works on iOS, Android, desktop. User
+  // pastes a Quizlet set URL; we POST to /api/quizlet (a Cloudflare
+  // Pages Function) which fetches the page server-side, parses out
+  // the cards, returns JSON. Then we hop to /#/cards?d=<tsv> like
+  // the bookmarklet path.
+
+  function makePasteURLZone() {
+    const input = el("input", {
+      type: "url",
+      class: "dg-paste-input",
+      placeholder: "https://quizlet.com/12345/your-set",
+      autocomplete: "off",
+      autocapitalize: "off",
+      spellcheck: "false",
+      "aria-label": "Quizlet set URL",
+    });
+
+    const btn = el("button", {
+      class: "dg-paste-btn",
+      type: "button",
+    }, "Yoink cards →");
+
+    const status = el("div", { class: "dg-paste-status" });
+
+    async function tryFetch() {
+      const url = (input.value || "").trim();
+      if (!url) {
+        showStatus("error", "Paste a Quizlet set URL first.");
+        input.focus();
+        return;
+      }
+      if (!/^https?:\/\/(?:www\.)?quizlet\.com\/\d+\//i.test(url)) {
+        showStatus("error", "That doesn’t look like a Quizlet set URL — it should look like quizlet.com/12345/title.");
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Yoinking…";
+      showStatus("loading", "Fetching the set…");
+      try {
+        const r = await fetch("/api/quizlet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await r.json();
+        if (!data.ok) {
+          throw new Error(data.error || "Couldn't read that set.");
+        }
+        const tsv = data.cards.map(c => c.term + "\t" + c.definition).join("\n");
+        showStatus("ok", "Got " + data.count + " cards from “" + (data.title || "Quizlet set") + "” — opening…");
+        setTimeout(() => {
+          location.hash = "#/cards?n=" + data.count + "&d=" + encodeURIComponent(tsv);
+        }, 350);
+      } catch (e) {
+        showStatus("error", e.message || "Something went wrong fetching that set.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Yoink cards →";
+      }
+    }
+
+    function showStatus(kind, msg) {
+      status.className = "dg-paste-status is-" + kind;
+      status.textContent = msg;
+    }
+
+    btn.addEventListener("click", tryFetch);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); tryFetch(); }
+    });
+
+    return el("section", { class: "dg-paste-zone" },
+      el("div", { class: "dg-paste-eyebrow" },
+        "📱 Paste-URL · ",
+        el("span", { class: "dg-paste-beta" }, "experimental"),
+      ),
+      el("h2", { class: "dg-paste-title" }, "Or just paste a Quizlet link."),
+      el("p", { class: "dg-paste-sub" },
+        "Tap Quizlet's Share button on the set page → Copy Link → paste below. We try to fetch it server-side. ",
+        el("strong", null, "Note:"),
+        " Quizlet aggressively blocks server scrapers, so this won't always succeed. If it fails, scroll down to the iOS bookmarklet path.",
+      ),
+      el("div", { class: "dg-paste-row" }, input, btn),
+      status,
+      el("div", { class: "dg-paste-tip" },
+        el("strong", null, "If Quizlet blocks the fetch:"),
+        " use the bookmarklet path further down — it runs in your own browser so Quizlet treats it as you. The iOS install steps work in iPhone Safari.",
+      ),
+    );
+  }
+
   // -------- Header / footer (shared) ---------------------------------
 
   function makeHeader() {
@@ -121,9 +213,12 @@
     // Hero
     const hero = el("section", { class: "dg-hero" },
       el("h1", null, "Free flashcards. ", el("span", { class: "accent" }, "In your browser.")),
-      el("p", null, "Drop the bookmark. Click it on any Quizlet set. Study right here, or export your cards as TSV, CSV, JSON, or Anki. No login. Open source."),
+      el("p", null, "Paste a Quizlet link (works on phones too). Or drop the bookmarklet on desktop. Study right here or export to TSV / CSV / JSON / Anki. No login. Open source."),
     );
     root.appendChild(hero);
+
+    // Paste-URL zone — primary path for iOS/Android, also works on desktop
+    root.appendChild(makePasteURLZone());
 
     // The bookmarklet drag zone
     const pill = el("a", {
