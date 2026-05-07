@@ -145,16 +145,6 @@
         el("strong", null, "bookmarks bar"),
         ". Click it on any Quizlet set page to import.",
       ),
-      // Browser support notice — point Safari users to the simple version below
-      el("div", { class: "dg-safari-notice", role: "note" },
-        el("span", { class: "dg-safari-notice-icon", "aria-hidden": "true" }, "⚠"),
-        el("div", null,
-          el("strong", null, "On Safari?"),
-          " The button above won’t work — Safari blocks the popup it opens. Use the ",
-          el("strong", null, "Simple version (Safari)"),
-          " below instead. It runs differently and stays on the page.",
-        ),
-      ),
       // Helpful tip for users without a bookmarks bar visible
       makeBookmarkBarHelp(),
       // Manual-install fallback (collapsed by default)
@@ -260,7 +250,7 @@
       { name: "Arc",     letter: "A", color: "#FF6B97",
         path: "Bookmarks live in the sidebar by default" },
       { name: "Safari",  letter: "S", color: "#0FB5EE",
-        path: "Not supported yet — try Chrome / Firefox", unsupported: true },
+        path: "View → Show Favorites Bar (use Safari version below)" },
     ];
 
     const grid = el("div", { class: "dg-browsers-grid" });
