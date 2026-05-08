@@ -1,0 +1,15 @@
+# Cloudflare Pages cache headers.
+#
+# scraper.js / scraper-simple.js are served to users via the bookmarklet
+# loader on every click. Short max-age (60s) so when we deploy a new
+# scraper version, users pick it up within a minute. CDN cache 30s.
+
+/scraper.js
+  Cache-Control: public, max-age=60, s-maxage=30, must-revalidate
+  Access-Control-Allow-Origin: *
+  Content-Type: application/javascript; charset=utf-8
+
+/scraper-simple.js
+  Cache-Control: public, max-age=60, s-maxage=30, must-revalidate
+  Access-Control-Allow-Origin: *
+  Content-Type: application/javascript; charset=utf-8
