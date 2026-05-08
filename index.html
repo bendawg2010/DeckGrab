@@ -19,6 +19,38 @@
 </head>
 <body>
   <main id="root"></main>
+  <footer class="dg-tip-footer">
+    <span>Free &amp; open source · MIT licensed</span>
+    <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener"
+       class="dg-tip-cashapp">💸 Tip $1 on Cash App</a>
+    <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">Sponsor</a>
+    <a href="https://github.com/bendawg2010/DeckGrab" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+  <style>
+    .dg-tip-footer {
+      margin: 32px auto 24px; padding: 14px 18px;
+      max-width: 640px; display: flex; gap: 16px;
+      align-items: center; justify-content: center;
+      flex-wrap: wrap;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .dg-tip-footer a {
+      color: rgba(255,255,255,0.78);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .dg-tip-footer a:hover { color: white; }
+    .dg-tip-cashapp {
+      background: linear-gradient(135deg, #00D632, #00B22A);
+      color: white !important;
+      padding: 6px 12px; border-radius: 999px;
+      font-weight: 800;
+    }
+    .dg-tip-cashapp:hover { filter: brightness(1.08); }
+  </style>
   <script src="js/app.js"></script>
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
